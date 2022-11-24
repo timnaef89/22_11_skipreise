@@ -1,10 +1,12 @@
 library(httr)
 library(xml2)
-
+library(tidyverse)
 # Quelle
 
 quelle <- "https://ski.ticketcorner.ch/de/"
 
+
+################################################################################
 
 #Skigebiete und deren Nummern
 
@@ -19,7 +21,16 @@ quelle <- "https://ski.ticketcorner.ch/de/"
 # Gstaad-Region         -  2
 # 
 # Laax                  - 50
-# 
+
+
+# keine tickets auf ticketcorner
+
+# Aletsch Arena         - 
+# Mattherhorn Zermatt   - 
+
+################################################################################
+
+# get names of skigebiete und die passenden nummern dazu
 
 
 dta_ski <- tibble(skigebietname = c("arosa_lenzerheide",
@@ -30,18 +41,20 @@ dta_ski <- tibble(skigebietname = c("arosa_lenzerheide",
                      skigebiet_nr = c(3,21,27,2,50))
 
 
-# keine tickets auf ticketcorner
+# load get_ski_price-function
 
-# Aletsch Arena         - 
-# Mattherhorn Zermatt   - 
-
+source("function_get_ski_price.R")
 
 
 
 
-get_ski_price(skigebiet_name = "arosa_lenzerheide",
-              skigebiet_nr = 3,
-              enddatum = 31)
+
+
+# test
+
+# get_ski_price(skigebiet_name = "arosa_lenzerheide",
+#               skigebiet_nr = 3,
+#               enddatum = 31)
 
 
 
@@ -49,4 +62,5 @@ get_ski_price(skigebiet_name = "arosa_lenzerheide",
 walk2(dta_ski$skigebietname, dta_ski$skigebiet_nr,
       function(x, y) get_ski_price(skigebiet_name = x,
                                     skigebiet_nr = y, 
-                                       enddatum = 16))
+                                       enddatum = 16)) # enddatum beim eigentlichen durchgang weglassen; default = 16. April 2023 (saisonschluss der
+                                                        # meisten Skigebiete)
