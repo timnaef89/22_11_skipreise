@@ -1,10 +1,13 @@
 library(httr)
 library(xml2)
 library(rvest)
+library(lubridate)
+library(DBI)
+library(RSQLite)
 
 # Quelle
 
-quelle <- "https://ski.ticketcorner.ch/de/"
+#quelle <- "https://ski.ticketcorner.ch/de/"
 
 
 #Skigebiete und deren Nummern
@@ -53,7 +56,7 @@ get_ski_price <- function(skigebiet_name = "skigebiet_name",
                           enddatum = as.numeric(difftime(as.Date("2023-04-16"), Sys.Date(),units='days'))) {
   
   
-  skigebiet <- NULL
+  
 
 
 for (i in 1:enddatum) {
@@ -65,39 +68,72 @@ for (i in 1:enddatum) {
   r <- GET(url)
   
   
-  rr <- content(r) %>% 
-    html_nodes("#ticket-price-collapse-1 .ticket-price-description+ .product .price") %>% 
-    html_text() 
+  rr <- content(r) 
+  
+  rrr <- rr %>% 
+    html_nodes(".tickets-price .px-0 div:nth-child(1) > div:nth-child(1) > :nth-child(1)") %>% 
+    html_text()
   
   
   
+  rrr = rrr[!(rrr == "Gratis Kind")]
   
+  df_ski = data.frame(typ = rep(NA, 1000), 
+                        person = rep(NA, 1000),
+                        preis = rep(NA, 1000))
   
-  if(is_empty(rr)) {
-    rr <- "Kein Ticket"
+  row = 1
+  for(k in seq_along(rrr)){
+    if(grepl("ticket", rrr[k])){
+      typ = rrr[k]
+    }else{
+      if(!grepl("[0-9]", rrr[k])){
+        person = rrr[k]
+      }else{
+        df_ski[row,"typ"] = typ
+        df_ski[row, "person"] = person
+        df_ski[row, "preis"] = rrr[k]
+        row = row + 1 
+      }
+    }
   }
   
-  if(is.null(skigebiet)) {
-    skigebiet <- data.frame(heute = Sys.Date(),
-                                tag = Sys.Date()+i,
-                                preis = rr)
-  }
-  else {
-    skigebiet <- skigebiet %>% 
-      bind_rows(data.frame(heute = Sys.Date(),
-                           tag = Sys.Date()+i,
-                           preis = rr))
-  }
   
+  df_ski = df_ski %>% 
+    na.omit() %>% 
+    mutate(skigebiet = skigebiet_name,
+           tag = Sys.Date()+i)
+
+  
+  # print(df_ski)
+  
+
+  con = dbConnect(SQLite(), "skitickets.sqlite")
+
+  
+  # in die Tabelle schreiben
+  
+  
+  for (k in seq_len(nrow(df_ski))) {
+    
+    sql = paste0("INSERT INTO skiticket(Gebiet, Date, Typ, Person, Preis)
+VALUES ('",skigebiet_name,"', '",Sys.Date()+i,"', '", df_ski$typ[k],"', '", df_ski$person[k],"', '", df_ski$preis[k],"')")
+    dbSendQuery(con, sql)
+    
+    
+  }
+    
+  # dbReadTable(con, "skiticket")
+  
+  
+  #dbSendQuery(con, "DELETE FROM skiticket")
+  
+  dbDisconnect(con)
  
   
 }
   
   
-  #maybe safe in global env
-  
-  #assign(skigebiet_name, skigebiet, envir = .GlobalEnv)
-  
-write_csv(skigebiet, paste0(skigebiet_name,"_", Sys.Date(),".csv"))
+
 
 }
