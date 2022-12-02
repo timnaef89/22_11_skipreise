@@ -128,6 +128,8 @@ Sys.sleep(10)
 tryCatch({get_ski_price(skigebiet_name = "soerenberg",
                         skigebiet_nr = 58,
                         #enddatum = 15
+                        
+                        
 )}, 
 error = function(cond) { cat(paste0("Fehler: ", cond))})
 

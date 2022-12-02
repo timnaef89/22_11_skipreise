@@ -10,7 +10,7 @@ library(RSQLite)
 
 # connect to sql-server
 
-#con = dbConnect(SQLite(), "skitickets.sqlite")
+con = dbConnect(SQLite(), "skitickets.sqlite")
 
 
 
@@ -26,7 +26,19 @@ library(RSQLite)
 # )"
 
 
+# df_arosa
+
+# sql = "CREATE TABLE skiticket_arosa(
+#   ScrapedDate DATE DEFAULT (STRFTIME('%Y-%m-%d', 'NOW', 'localtime')),
+#   Gebiet VARCHAR(32) NOT NULL,
+#   Date DATE NOT NULL,
+#   Typ VARCHAR(256) NOT NULL,
+#   Person VARCHAR(64) NOT NULL,
+#   Preis VARCHAR(64)
+# )"
+
+
 
 # send query
 
-# dbSendQuery(con, sql)
+ dbSendQuery(con, sql)
