@@ -114,23 +114,10 @@ VALUES ('",arosa_lenzerheide,"', '",Sys.Date()+as.numeric(k),"', '", second_df$t
   
   end_time <- Sys.time()
   print(end_time - start_time)
+  
+  Sys.sleep(480)
    
 }
 
 
 dbDisconnect(con)
-
-
-
-
-
-
-
-# hier im loop ergänzen
-  
-
-
-
-test <- arosa_df %>% 
-  group_by(typ, Date) %>% 
-  tally()
